@@ -7,27 +7,48 @@ blogsRouter.get('/', async (request, response) => {
     .find({}).populate('user', { username: 1, name: 1 })
 
   response.json(blogs)
-})
+});
 
-blogsRouter.put('/:id/likes', userExtractor, async (request, response) => {
-  const { likes } = request.body
+blogsRouter.put('/:id/dislikes', userExtractor, async (request, response) => {
+  const { dislikes } = request.body;
 
   try {
     const updatedBlog = await Blog.findByIdAndUpdate(
       request.params.id,
-      { likes },
+      { dislikes },
       { new: true, runValidators: true }
-    ).populate('user', { username: 1, name: 1 })
+    ).populate('user', { username: 1, name: 1 });
 
     if (!updatedBlog) {
-      return response.status(404).json({ error: 'Blog not found' })
+      return response.status(404).json({ error: 'Blog not found' });
     }
 
-    response.json(updatedBlog)
-  } catch {
-    response.status(500).json({ error: 'Server error' })
+    response.json(updatedBlog);
+  } catch (error) {
+    response.status(500).json({ error: 'Server error' });
   }
-})
+});
+
+blogsRouter.put('/:id/likes', userExtractor, async (request, response) => {
+  const { likes } = request.body;
+
+  try {
+    const updatedBlog = await Blog.findByIdAndUpdate(
+      request.params.id,
+      { likes }, // Solo usa "likes", sin necesidad de dislikes
+      { new: true, runValidators: true }
+    ).populate('user', { username: 1, name: 1 });
+
+    if (!updatedBlog) {
+      return response.status(404).json({ error: 'Blog not found' });
+    }
+
+    response.json(updatedBlog);
+  } catch {
+    response.status(500).json({ error: 'Server error' });
+  }
+});
+
 
 blogsRouter.post('/', userExtractor, async (request, response, next) => {
   const body = request.body
@@ -42,6 +63,7 @@ blogsRouter.post('/', userExtractor, async (request, response, next) => {
     author: body.author,
     url: body.url,
     likes: body.likes || 0,
+    dislikes: body.dislikes || 0,
     user: user._id
   })
 
